@@ -15,6 +15,12 @@ class Painter:
         self.array = self.format_array(array)
         self.filename = filename
 
+    def __getitem__(self, index):
+        return self.array[index]
+
+    def __setitem__(self, key, item):
+        self.array[key] = item
+
     def format_array(self, array):
         """
         Transposes an array and makes each cell an instance of Pixel(x_coord, y_coord, colour)
@@ -212,4 +218,6 @@ class Painter:
                             self.array[x][y].colour = colour
 
         return centre
+
+
 

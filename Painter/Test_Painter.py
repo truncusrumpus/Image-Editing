@@ -6,6 +6,27 @@ from Pixel.Pixel import Pixel
 
 
 class TestPainter(unittest.TestCase):
+    def test_get_item(self):
+        test_array = [[1, 10], [2, 20], [3, 30]]
+
+        p = Painter(test_array)
+        self.assertEqual(p[0][0].colour, 1)
+        self.assertEqual(p[1][2].colour, 30)
+
+    def test_set_item(self):
+        test_array = [[1, 10], [2, 20], [3, 30]]
+
+        p = Painter(test_array)
+        self.assertEqual(p[0][0].colour, 1)
+
+        # Testing set item using property
+        p[0][0].colour = "changed"
+        self.assertEqual(p[0][0].colour, "changed")
+
+        # Testing set item not using property
+        p[0][0] = "changed"
+        self.assertEqual(p[0][0], "changed")
+
     def test_format_array(self):
         e = Editor()
         test_array = [[0, 1, 2, 3], [0, 1, 2, 3]]
