@@ -40,7 +40,7 @@ class Painter:
         export_array = np.zeros([self.height, self.width, 4], dtype=np.uint8)
         for w in range(self.width):
             for h in range(self.height):
-                export_array[h, w] = self.array[w][h].colour
+                export_array[h, w] = self[w][h].colour
         return export_array
 
     def list_equal(self, array1, array2):
@@ -81,7 +81,7 @@ class Painter:
             if 0 <= start.x < self.width:
                 for y in range(start.y, end.y + 1):
                     if 0 <= y < self.height:
-                        self.circle_fill(self.array[start.x][y], int(stroke_weight + 0.5), colour)
+                        self.circle_fill(self[start.x][y], int(stroke_weight + 0.5), colour)
             return end
 
         # Gradient = 0 (horizontal line)
@@ -89,14 +89,14 @@ class Painter:
             if 0 <= start.y < self.height:
                 for x in range(start.x, end.x + 1):
                     if 0 <= x < self.width:
-                        self.circle_fill(self.array[x][start.y], int(stroke_weight + 0.5), colour)
+                        self.circle_fill(self[x][start.y], int(stroke_weight + 0.5), colour)
             return end
 
         # Initialising while loop
         x_count = start.x
         y_count = start.y
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
-            self.array[x_count][y_count].colour = colour
+            self[x_count][y_count].colour = colour
 
         m = (end.y - start.y) / (end.x - start.x)  # m = gradient
         m_down = math.floor(m)
@@ -128,7 +128,7 @@ class Painter:
             x_count += m_inv_round * change
 
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
-            self.array[x_count][y_count].colour = colour
+            self[x_count][y_count].colour = colour
 
         while True:
             if x_count != start.x:
@@ -189,7 +189,7 @@ class Painter:
 
             # Will draw a circle of radius equal to stroke_weight
             if 0 <= x_count < self.width and 0 <= y_count < self.height:
-                self.circle_fill(self.array[x_count][y_count], int(stroke_weight + 0.5), colour)
+                self.circle_fill(self[x_count][y_count], int(stroke_weight + 0.5), colour)
 
             if y_count == end.y and x_count == end.x:
                 break
@@ -213,9 +213,9 @@ class Painter:
         for x in range(centre.x - radius + 1, centre.x + radius):
             for y in range(centre.y - radius + 1, centre.y + radius):
                 if 0 <= x < self.width and 0 <= y < self.height:
-                    if not self.list_equal(self.array[x][y].colour, colour):
+                    if not self.list_equal(self[x][y].colour, colour):
                         if self.dist_2d(centre.x, centre.y, x, y) <= radius:
-                            self.array[x][y].colour = colour
+                            self[x][y].colour = colour
 
         return centre
 
