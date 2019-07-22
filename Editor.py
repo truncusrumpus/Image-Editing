@@ -22,8 +22,13 @@ class Editor:
         self.array = image_array
         return image_array
 
-    def check_file_type(self, file_name):
-        return file_name[-3:]
+    def file_type(self, file_name):
+        string = ""
+        for i in range(len(file_name) - 1, 0):
+            if file_name[i] != ".":
+                string += file_name[i]
+            else:
+                return string
 
     def save_image(self, file_name):
         img = Image.fromarray(self.array)
