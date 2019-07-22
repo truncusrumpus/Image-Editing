@@ -37,6 +37,22 @@ class Painter:
                 export_array[h, w] = self.array[w][h].colour
         return export_array
 
+    def list_equal(self, array1, array2):
+        """Returns True if two lists are equal. Returns False otherwise"""
+        if len(array1) != len(array2):
+            return False
+        for i in range(len(array1)):
+            if array1[i] != array2[i]:
+                return False
+        return True
+
+    def dist_2d(self, x1, y1, x2, y2):
+        """
+        Returns the distance (float) from (x1, y1) to (x2, y2)
+        """
+        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        return dist
+
     def straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1):
         """
         Draws a straight line from the start pixel to the end pixel
@@ -173,4 +189,27 @@ class Painter:
                 break
 
         return end
+
+    def circle_fill(self, centre, radius=1, colour=[0, 0, 0, 255]):
+        """
+        Draws a circle of colour, 'colour', with radius, 'radius', at pixel, 'centre'
+
+        :param centre: Pixel(int, int)
+        :param radius: int >= 0
+        :param colour: [r, g, b, a]
+        :return:
+        """
+        assert type(centre.x) is int and type(centre.y) is int, "Coord's are not int's"
+        assert radius >= 0
+        for ink in colour:
+            assert 0 <= ink <= 255
+
+        for x in range(centre.x - radius + 1, centre.x + radius):
+            for y in range(centre.y - radius + 1, centre.y + radius):
+                if 0 <= x < self.width and 0 <= y < self.height:
+                    if not self.list_equal(self.array[x][y].colour, colour):
+                        if self.dist_2d(centre.x, centre.y, x, y) <= radius:
+                            self.array[x][y].colour = colour
+
+        return centre
 
