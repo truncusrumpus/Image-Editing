@@ -1,10 +1,6 @@
 from PIL import Image
 import numpy as np
-import math
 import csv
-import timeit
-import random
-from Pixel import Pixel
 
 
 class Editor:
@@ -24,7 +20,7 @@ class Editor:
 
     def file_type(self, file_name):
         """
-        Returns the file type for a given file_name.
+        Returns the file type for the given file_name.
         Returns False if there is no file type
         """
         string = ""
@@ -39,22 +35,29 @@ class Editor:
             return string
         return False
 
+    def save_image(self, file_name=""):
+        """Saves image to file_name or self.file_name"""
+        if file_name == "":
+            name = self.file_name
+        else:
+            name = file_name
 
-    def save_image(self, file_name):
         img = Image.fromarray(self.array)
-        img.save(file_name)
+        img.save(name)
 
     def load_array(self, array):
         self.array = array
 
-    def create_png_array(self, width=500, height=500, colour=[0, 0, 0, 255]):
-        png_array = np.zeros([height, width, 4], dtype=np.uint8)
+    def create_rgba_array(self, width=500, height=500, colour=[0, 0, 0, 255]):
+        """Creates an rgba array [red, blue, green, alpha] of height x width x 4"""
+        rgba_array = np.zeros([height, width, 4], dtype=np.uint8)
         for h in range(height):
             for w in range(width):
-                png_array[h, w] = colour
-        self.array = png_array
+                rgba_array[h, w] = colour
+        self.array = rgba_array
 
     def write_array_to_csv(self, file_name, array=None):
+        """Writes the current array to a CSV file"""
         if array is None:
             array = self.array
 
