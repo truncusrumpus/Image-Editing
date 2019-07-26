@@ -54,7 +54,7 @@ class Painter:
 
     def list_avg(self, array):
         """Returns the average value of a list"""
-        return round(sum(array), 10) / len(array)
+        return round(round(sum(array), 10) / len(array), 10)
 
     def list_diff_avg(self, array):
         """Returns the average of all of the differences between
@@ -453,6 +453,9 @@ class Painter:
                         min_diff = dist
                         chosen_cell = cell
 
+            if current.x == 176 and current.y == 156:
+                print("piglet")
+
             prev = current
             current = chosen_cell
 
@@ -533,7 +536,7 @@ class Painter:
                 arc_proportion = (angle + iterations * math.pi) / (2 * math.pi)
 
             # TESTING PURPOSES!!!
-            # print("x: " + str(current.x) + ", y: " + str(current.y))
+            print("x: " + str(current.x) + ", y: " + str(current.y))
             img = Image.fromarray(self.export_array())
             img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 

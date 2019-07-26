@@ -67,9 +67,28 @@ class TestPainter(unittest.TestCase):
         list = [1, 2, 3]
         self.assertEqual(p.list_avg(list), 2)
 
-        list = [-0.1, 0.0, 0.4]
-        a = sum(list)
         self.assertEqual(p.list_avg(list), 0.1)
+
+    def test_list_diff_avg(self):
+        p = Painter([[None]])
+
+        list = [1, 2, 4, 7]
+        self.assertEqual(p.list_diff_avg(list), 2)
+
+        list = [-0.1, 0.1, 0.4]
+        self.assertEqual(p.list_diff_avg(list), 0.25)
+
+    def test_curve_centre(self):
+        colour = [255, 0, 0, 255]
+        e = Editor()
+        e.create_rgba_array(200, 200)
+        p = Painter(e.array)
+
+        start = p.array[100][100]
+        coords = [2000, 1000, 500, 200, 150, 120, 110, 105, 101, 99, 95, 90, 80, 50, 20, 0, -10, -100, -200, -2000]
+        for coord in coords:
+            centre = Pixel(coord, coord, False)
+            p.curve_centre(start, centre, 1, colour, 2)
 
     def test_dist_2d(self):
         p = Painter([[None]])
