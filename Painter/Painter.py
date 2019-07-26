@@ -706,5 +706,66 @@ class Painter:
 
         return current
 
+    def paint_fill(self, start, fill_colour, background_colour):
+        # If pixel is not in painter array, return
+        if start.colour is False:
+            return start
 
+        # If pixel is not the 'background colour', return
+        if not self.list_equal(start.colour, background_colour):
+            return start
+
+        if start.line is True:
+            return start
+
+        # Start pixel colour = designated 'fill colour'
+        start.colour = fill_colour
+
+        # Creating queue (FIFO)
+        queue = FillQueue()
+
+        # Adding start pixel to end of queue
+        queue.append(start)
+
+        # While queue is not empty
+        while not queue.is_empty():
+            # Removing first node (pixel) from queue
+            pixel = queue.serve()
+
+            adj = pixel.adjacent_squares(self.array)
+
+            # If the color of pixel to left of n is background_colour set
+            # color of pixel to fill_colour and add pixel to the end of queue
+            if adj[6]:
+                if self.list_equal(adj[6].colour, background_colour):
+                    if adj[6].line is False:
+                        adj[6].colour = fill_colour
+                        queue.append(adj[6])
+
+            # If the color of pixel to right of n is background_colour set
+            # color of pixel to fill_colour and add pixel to the end of queue
+            if adj[2]:
+                if self.list_equal(adj[2].colour, background_colour):
+                    if adj[2].line is False:
+                        adj[2].colour = fill_colour
+                        queue.append(adj[2])
+
+            # If the color of pixel above n is background_colour set
+            # color of pixel to fill_colour and add pixel to the end of queue
+            if adj[0]:
+                if self.list_equal(adj[0].colour, background_colour):
+                    if adj[0].line is False:
+                        adj[0].colour = fill_colour
+                        queue.append(adj[0])
+
+            # If the color of pixel below n is background_colour set
+            # color of pixel to fill_colour and add pixel to the end of queue
+            if adj[4]:
+                if self.list_equal(adj[4].colour, background_colour):
+                    if adj[4].line is False:
+                        adj[4].colour = fill_colour
+                        queue.append(adj[4])
+
+        # If queue is empty, return
+        return start
 
