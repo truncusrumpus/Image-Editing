@@ -81,7 +81,9 @@ class Painter:
             if 0 <= start.x < self.width:
                 for y in range(start.y, end.y + 1):
                     if 0 <= y < self.height:
-                        self.circle_fill(self[start.x][y], int(stroke_weight + 0.5), colour)
+                        if stroke_weight >= 0.5:
+                            self.circle_fill(self[start.x][y], int(stroke_weight + 0.5), colour)
+                        self[start.x][y].line = True
             return end
 
         # Gradient = 0 (horizontal line)
@@ -89,14 +91,18 @@ class Painter:
             if 0 <= start.y < self.height:
                 for x in range(start.x, end.x + 1):
                     if 0 <= x < self.width:
-                        self.circle_fill(self[x][start.y], int(stroke_weight + 0.5), colour)
+                        if stroke_weight >= 0.5:
+                            self.circle_fill(self[x][start.y], int(stroke_weight + 0.5), colour)
+                        self[x][start.y].line = True
             return end
 
         # Initialising while loop
         x_count = start.x
         y_count = start.y
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
-            self[x_count][y_count].colour = colour
+            if stroke_weight >= 0.5:
+                self[x_count][y_count].colour = colour
+            self[x_count][y_count].line = True
 
         m = (end.y - start.y) / (end.x - start.x)  # m = gradient
         m_down = math.floor(m)
@@ -128,7 +134,9 @@ class Painter:
             x_count += m_inv_round * change
 
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
-            self[x_count][y_count].colour = colour
+            if stroke_weight >= 0.5:
+                self[x_count][y_count].colour = colour
+            self[x_count][y_count].line = True
 
         while True:
             if x_count != start.x:
@@ -189,7 +197,9 @@ class Painter:
 
             # Will draw a circle of radius equal to stroke_weight
             if 0 <= x_count < self.width and 0 <= y_count < self.height:
-                self.circle_fill(self[x_count][y_count], int(stroke_weight + 0.5), colour)
+                if stroke_weight >= 0.5:
+                    self.circle_fill(self[x_count][y_count], int(stroke_weight + 0.5), colour)
+                self[x_count][y_count].line = True
 
             if y_count == end.y and x_count == end.x:
                 break
@@ -218,6 +228,142 @@ class Painter:
                             self[x][y].colour = colour
 
         return centre
+
+    def paint_drop_line(self, start, end, colour=[0, 0, 0, 255], start_stroke=1, end_stroke=1):
+        assert type(start.x) is int and type(start.y) is int, "Coord's are not int's"
+        assert type(end.x) is int and type(end.y) is int, "Coord's are not int's"
+
+        stroke_weight = start_stroke
+        dist = self.dist_2d(start.x, start.y, end.x, end.y)
+        stroke_iter = (end_stroke-start_stroke)/dist
+
+        # Gradient = Undefined (vertical line)
+        if start.x == end.x:
+            if 0 <= start.x < self.width:
+                for y in range(start.y, end.y + 1):
+                    if 0 <= y < self.height:
+                        self.circle_fill(self.array[start.x][y], int(stroke_weight + 0.5), colour)
+                    stroke_weight += stroke_iter
+
+            return end
+
+        # Gradient = 0 (horizontal line)
+        elif start.y == end.y:
+            if 0 <= start.y < self.height:
+                for x in range(start.x, end.x + 1):
+                    if 0 <= x < self.width:
+                        self.circle_fill(self.array[x][start.y], int(stroke_weight + 0.5), colour)
+                    stroke_weight += stroke_iter
+            return end
+
+        # Initialising while loop
+        x_count = start.x
+        y_count = start.y
+        if 0 <= x_count < self.width and 0 <= y_count < self.height:
+            self.array[x_count][y_count].colour = colour
+            stroke_weight += stroke_iter
+
+        m = (end.y - start.y) / (end.x - start.x)  # m = gradient
+        m_down = math.floor(m)
+        m_up = math.ceil(m)
+        m_round = round(m)
+        m_inv = 1 / m
+        m_inv_round = round(1 / m)
+        m_inv_down = math.floor(1 / m)
+        m_inv_up = math.ceil(1 / m)
+
+        iterate_x = True
+        if m < -1 or m > 1:
+            iterate_x = False
+
+        change = 0
+        if iterate_x:
+            if start.x < end.x:
+                change = 1
+            elif start.x > end.x:
+                change = -1
+            x_count += change
+            y_count += m_round * change
+        else:
+            if start.y < end.y:
+                change = 1
+            elif start.y > end.y:
+                change = -1
+            y_count += change
+            x_count += m_inv_round * change
+
+        if 0 <= x_count < self.width and 0 <= y_count < self.height:
+            self.array[x_count][y_count].colour = colour
+            stroke_weight += stroke_iter
+
+        while True:
+            if x_count != start.x:
+                current_m = (y_count - start.y) / (x_count - start.x)
+            else:
+                current_m = 0
+
+            if iterate_x:
+                x_count += change
+
+                # If grad at current pixel is less than gradient at end
+                # pixel, then add the gradient at end pixel rounded up
+                if abs(current_m) < abs(m):
+                    if abs(m) == m:
+                        y_count += m_up * change
+                    else:
+                        y_count += m_down * change
+
+                # If grad at current pixel is more than gradient at end
+                # pixel, then add the gradient at end pixel rounded down
+                elif abs(current_m) > abs(m):
+                    if abs(m) == m:
+                        y_count += m_down * change
+                    else:
+                        y_count += m_up * change
+
+                # If grad at current pixel is equal to gradient at end
+                # pixel, then add the gradient at end pixel rounded normally
+                elif abs(current_m) == abs(m):
+                    y_count += m_round * change
+            else:
+                if current_m != 0:
+                    current_m_inv = 1 / current_m
+                else:
+                    current_m_inv = 0
+                y_count += change
+
+                # If grad at current pixel is less than gradient at end
+                # pixel, then add the gradient at end pixel rounded up
+                if abs(current_m_inv) < abs(m_inv):
+                    if abs(m) == m:
+                        x_count += m_inv_up * change
+                    else:
+                        x_count += m_inv_down * change
+
+                # If grad at current pixel is more than gradient at end
+                # pixel, then add the gradient at end pixel rounded down
+                elif abs(current_m_inv) > abs(m_inv):
+                    if abs(m) == m:
+                        x_count += m_inv_down * change
+                    else:
+                        x_count += m_inv_up * change
+
+                # If grad at current pixel is equal to gradient at end
+                # pixel, then add the gradient at end pixel rounded normally
+                elif abs(current_m_inv) == abs(m_inv):
+                    x_count += m_inv_round * change
+
+            # Will draw a circle of radius equal to stroke_weight
+            if 0 <= x_count < self.width and 0 <= y_count < self.height:
+                self.circle_fill(self.array[x_count][y_count], int(stroke_weight + 0.5), colour)
+                stroke_weight += stroke_iter
+
+            if y_count == end.y and x_count == end.x:
+                break
+
+        return end
+
+
 
 
 
