@@ -61,6 +61,16 @@ class TestPainter(unittest.TestCase):
         tuple1 = (0, -10, 1.1, "x")
         self.assertTrue(p.list_equal(list1, tuple1))
 
+    def test_list_avg(self):
+        p = Painter([[None]])
+
+        list = [1, 2, 3]
+        self.assertEqual(p.list_avg(list), 2)
+
+        list = [-0.1, 0.0, 0.4]
+        a = sum(list)
+        self.assertEqual(p.list_avg(list), 0.1)
+
     def test_dist_2d(self):
         p = Painter([[None]])
         self.assertEqual(p.dist_2d(1, 1, 1, 2), 1)

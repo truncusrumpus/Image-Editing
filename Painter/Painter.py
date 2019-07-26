@@ -52,6 +52,22 @@ class Painter:
                 return False
         return True
 
+    def list_avg(self, array):
+        """Returns the average value of a list"""
+        return round(sum(array), 10) / len(array)
+
+    def list_diff_avg(self, array):
+        """Returns the average of all of the differences between
+        adjacent elements in the list
+        eg: list = [1, 2, 4, 7], list_diffs = [1, 2, 3], list_diff_avg = 2"""
+        if len(array) == 1:
+            return 0
+
+        diff_sum = 0
+        for i in range(1, len(array)):
+            diff_sum += array[i] - array[i-1]
+        return diff_sum / (len(array) - 1)
+
     def dist_2d(self, x1, y1, x2, y2):
         """
         Returns the distance (float) from (x1, y1) to (x2, y2)
@@ -518,8 +534,8 @@ class Painter:
 
             # TESTING PURPOSES!!!
             # print("x: " + str(current.x) + ", y: " + str(current.y))
-            # img = Image.fromarray(self.export_array())
-            # img.save("test_output.png")
+            img = Image.fromarray(self.export_array())
+            img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
             backup_count += 1
 
