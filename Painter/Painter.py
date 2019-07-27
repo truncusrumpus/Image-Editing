@@ -400,7 +400,8 @@ class Painter:
         if start.colour is not False:
             if stroke_weight >= 0.5:
                 self.circle_fill(start, round(stroke_weight), colour)
-            self[start.x][start.y].line = True
+            if start.colour is not False:
+                self[start.x][start.y].line = True
         current = start
 
         # Trigonometric calculations variables
@@ -452,9 +453,6 @@ class Painter:
                                 continue
                         min_diff = dist
                         chosen_cell = cell
-
-            if current.x == 176 and current.y == 156:
-                print("piglet")
 
             prev = current
             current = chosen_cell
@@ -538,19 +536,19 @@ class Painter:
             # TESTING PURPOSES!!!
             # print("x: " + str(current.x) + ", y: " + str(current.y))
             # if round(arc_proportion, 4) * 1000 % 4 == 0 or arc_proportion > 0.9:
-            # if arc_proportion > 0.9:
-            #     print("prop: {0:1.4f}, backup_count: {1:2}, circ: {2:0.4}, b/c: {3:1.4}, diff1 = {4:1.4}, diff2 = {5:1.4}".format(arc_proportion, backup_count, circ, ((backup_count + 1)/circ), abs(arc_proportion - backup_count/circ), abs(arc_proportion - (backup_count + 65)/circ)))
-            test_diff = 10000
-            test_omega = 1
-            if arc_proportion > 0.9:
-                for i in range(1, int(r + 0.5)):
-                    if abs(arc_proportion - (backup_count + i)/circ) < test_diff:
-                        test_diff = abs(arc_proportion - (backup_count + i)/circ)
-                        test_omega = i
-                print("test_diff: {0:1.4f}, test_omega: {1}".format(test_diff, test_omega))
-            # print("diff = {0:1.4}".format(arc_proportion - backup_count/circ))
-            img = Image.fromarray(self.export_array())
-            img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+            # if arc_proportion == 1:
+            #     print("prop: {0:1.4f}, backup_count: {1:2}, circ: {2:4.4f}".format(arc_proportion, backup_count, circ))
+            # test_diff = 10000
+            # test_omega = 1
+            # if arc_proportion > 0.95:
+            #     for i in range(1, int(r + 0.5)):
+            #         if abs(arc_proportion - (backup_count + i)/circ) < test_diff:
+            #             test_diff = abs(arc_proportion - (backup_count + i)/circ)
+            #             test_omega = i
+            #     print("test_diff: {0:1.4f}, test_omega: {1}".format(test_diff, test_omega))
+            # # print("diff = {0:1.4}".format(arc_proportion - backup_count/circ))
+            # img = Image.fromarray(self.export_array())
+            # img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
             backup_count += 1
 
@@ -588,29 +586,16 @@ class Painter:
         current = start
 
         # Trigonometric calculations variables
-        # Used to measure whether angle is increasing (first half) or
-        # decreasing (second half) for each 360 degree rotation:
-        angle_diff_avg = False
-        prev_angles = []
-        # Used to compare current distance to previous distances in
-        # order to rig distances for pixels that could cause errors:
-        prev_dist = []
         # A counter for the while loop, measures the proportion completed so far:
         arc_proportion = 0
-        # Each iteration represents 180 degrees completed so far:
-        iterations = 0
-
-        # Calculating a suitable length for prev_angles
-        prev_angles_len = int(math.pi*r/36 + 0.5)       # 1/40 of circumference
-        if prev_angles_len < 10:                        # or, if required:
-            prev_angles_len = int(math.pi*r/3 + 0.5)    # 1/6 of circumference
+        backup_count = 0
+        omega = 0.732219602 + 0.627778635 * r
+        end_backup_count = round(circ - omega)
+        alpha = 1
+        alpha_iter = (omega - 1)/end_backup_count
 
         # Could pick first adjacent square here to choose which way curve goes
         prev = None  # The previous Pixel, used to make sure don't go backwards
-
-        # A backup counter that iterates for each Pixel, checked against the
-        # estimated number of pixels that should be iteration through, with error margin:
-        backup_count = 0
 
         # While loop iterates around the circle until the proportion iterated through
         # so far is equal to the proportion desired or if that doesn't work,
@@ -637,102 +622,26 @@ class Painter:
                         min_diff = dist
                         chosen_cell = cell
 
-            if current.x == 176 and current.y == 156:
-                print("piglet")
-
             prev = current
             current = chosen_cell
 
-            # FOR TESTING!!!
-            # Seeing when a Pixel has already been assigned the colour
-            try:
-                if all(current.colour == colour):
-                    pass
-                    # point where circle rejoins itself
-            except TypeError:
-                pass
-
-            # Setting colour of current square and adjacents (if desired)
+            # Setting colour of current square and those adjacent (if desired)
             if current.colour is not False:
                 if stroke_weight >= 0.5:
                     self.circle_fill(current, round(stroke_weight), colour)
                 self[current.x][current.y].line = True
 
-            # Distance calculations
-            dist = self.dist_2d(current.x, current.y, start.x, start.y)
-            if dist > 2*r:                   # Distance between two pixels is greater than
-                dist = 2*r                   # diameter which is not possible for calculations
-
-            # Decreasing angle - grad(angle) = negative
-            if len(prev_dist) > 1:
-                if angle_diff_avg < 0:
-                    if dist > self.list_avg(prev_dist):
-                        dist = 1.25*prev_dist[len(prev_dist) - 1] - 0.25*prev_dist[len(prev_dist) - 2]
-                # Increasing angle - grad(angle) = positive
-                elif angle_diff_avg > 0:
-                    if dist < self.list_avg(prev_dist):
-                        dist = 1.25*prev_dist[len(prev_dist) - 1] - 0.25*prev_dist[len(prev_dist) - 2]
-
-            if dist > 2*r:                   # Distance between two pixels is greater than
-                dist = 2*r
-
-            if len(prev_dist) > 2:
-                prev_dist.pop(0)
-            if angle_diff_avg != 0:
-                prev_dist.append(dist)
-
-            # Angle calculations
-            alpha = math.acos(dist/(2*r))
-            angle = math.pi - 2*alpha
-
-            # Trigonometric Calculations
-            if angle_diff_avg is not False:
-                if len(prev_angles) > prev_angles_len:
-                    prev_angles.pop(0)
-                prev_angles.append(angle)
-                # Using an average value for prev_angle to assure comparisons are correct
-                angle_diff_avg = self.list_diff_avg(prev_angles)
-            else:
-                if len(prev_angles) > prev_angles_len:
-                    prev_angles.pop(0)
-                prev_angles.append(angle)
-                angle_diff_avg = self.list_diff_avg(prev_angles)
-
-            if angle == math.pi:
-                prev_angles = []
-                prev_dist = []
-                angle_diff_avg = 0
-
-            # Checks for adding to iterations
-            if angle_diff_avg is not False:
-                # If grad(angle) is negative (second half)
-                if angle_diff_avg < 0 and iterations % 2 == 0:
-                    iterations += 1
-                # If grad(angle) is positive (first half)
-                elif angle_diff_avg > 0 and iterations % 2 == 1:
-                    iterations += 1
-
-            # Total angle if end position is in 3rd or 4th quadrant
-            if iterations % 2 == 1:
-                arc_proportion = ((iterations + 1)*math.pi - angle)/(2*math.pi)
-            # Total angle if end position is in 1st or 2nd quadrant
-            elif iterations % 2 == 0:
-                arc_proportion = (angle + iterations * math.pi) / (2 * math.pi)
-
             # TESTING PURPOSES!!!
             # print("x: " + str(current.x) + ", y: " + str(current.y))
-            print("")
-            img = Image.fromarray(self.export_array())
-            img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+            # img = Image.fromarray(self.export_array())
+            # img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+
+            alpha += alpha_iter
+            arc_proportion = (backup_count + alpha)/circ
 
             backup_count += 1
 
             # END OF WHILE LOOP
-
-        # Testing purposes
-        if proportion == 1:
-            assert current.x == start.x and current.y == start.y, "(" + str(current.x) + ", " + str(current.y) + ")"
-        # print("r: " + str(r) + ", circ: " + str(2*math.pi*r) + ", Count: " + str(backup_count))
 
         return current
 
