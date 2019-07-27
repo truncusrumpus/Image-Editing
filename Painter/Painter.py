@@ -538,8 +538,16 @@ class Painter:
             # TESTING PURPOSES!!!
             # print("x: " + str(current.x) + ", y: " + str(current.y))
             # if round(arc_proportion, 4) * 1000 % 4 == 0 or arc_proportion > 0.9:
+            # if arc_proportion > 0.9:
+            #     print("prop: {0:1.4f}, backup_count: {1:2}, circ: {2:0.4}, b/c: {3:1.4}, diff1 = {4:1.4}, diff2 = {5:1.4}".format(arc_proportion, backup_count, circ, ((backup_count + 1)/circ), abs(arc_proportion - backup_count/circ), abs(arc_proportion - (backup_count + 65)/circ)))
+            test_diff = 10000
+            test_omega = 1
             if arc_proportion > 0.9:
-                print("prop: {0:1.4f}, backup_count: {1:2}, circ: {2:0.4}, b/c: {3:1.4}, diff1 = {4:1.4}, diff2 = {5:1.4}".format(arc_proportion, backup_count, circ, ((backup_count + 1)/circ), abs(arc_proportion - backup_count/circ), abs(arc_proportion - (backup_count + 17)/circ)))
+                for i in range(1, int(r + 0.5)):
+                    if abs(arc_proportion - (backup_count + i)/circ) < test_diff:
+                        test_diff = abs(arc_proportion - (backup_count + i)/circ)
+                        test_omega = i
+                print("test_diff: {0:1.4f}, test_omega: {1}".format(test_diff, test_omega))
             # print("diff = {0:1.4}".format(arc_proportion - backup_count/circ))
             img = Image.fromarray(self.export_array())
             img.save("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
