@@ -78,8 +78,7 @@ class TestPainter(unittest.TestCase):
         list = [-0.1, 0.1, 0.4]
         self.assertEqual(p.list_diff_avg(list), 0.25)
 
-    def test_curve_centre2(self):
-        start_time = timeit.default_timer()
+    def test_old_curve_centre(self):
         colour = [255, 0, 0, 255]
         e = Editor()
         e.create_rgba_array(200, 200)
@@ -92,8 +91,6 @@ class TestPainter(unittest.TestCase):
             p.curve_centre(start, centre, 1, colour, 2)
             e.load_array(p.export_array())
             e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
-
-        print(timeit.default_timer() - start_time)
 
     def test_dist_2d(self):
         p = Painter([[None]])
