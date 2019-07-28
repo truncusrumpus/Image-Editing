@@ -838,12 +838,14 @@ class Painter:
 
             print("\rLoading: {:.0f}%".format(w / self.width * 100), end='')
             if w % int(self.width/2) == 0:
-                img = Image.fromarray(self.export_array())
-                img.save(self.filename)
+                if self.filename != "":
+                    img = Image.fromarray(self.export_array())
+                    img.save(self.filename)
 
-        img = Image.fromarray(self.export_array())
-        img.save(self.filename)
-        print("Paint Fill Render Complete.", end='\r')
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
+        print("\rPaint Fill Render Complete.")
 
     def grid(self, row_num, column_num, colour, stroke_weight):
         grid_width = self.width - stroke_weight
