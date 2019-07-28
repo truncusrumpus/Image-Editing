@@ -742,6 +742,17 @@ class Painter:
         return current
 
     def paint_fill(self, start, fill_colour, background_colour):
+        """
+        Iterates over an area, deemed to be background_colour, setting colour of Pixels
+        to be fill_colour until it reaches a Pixel of a different colour or one that is part
+        of an invisible line (used for filling shapes without the need for a border)
+
+        :param start: Pixel to begin paint filling
+        :param fill_colour: The colour to fill area with
+        :param background_colour: The designated back colour for the area to be filled
+        :return:
+        """
+
         # If pixel is not in painter array, return
         if start.colour is False:
             return start
@@ -804,3 +815,56 @@ class Painter:
         # If queue is empty, return
         return start
 
+    def paint_fill_canvas_skip(self, colours, background_colour, skip=(1, 1), timeout=600):
+        """
+        Iterates over the painter canvas with x iter value = skip[0] and y iter value = skip[1]
+        calling paint_fill on the coords
+        :param colours: An array of colours from which a colour is randomly chosen for each paint_fill
+        :param background_colour: The designated background_colour for each paint_fill call
+        :param skip: A tuple = (x_iter_value, y_iter_value)
+        :param timeout: The amount of time designated by the user before the function times out
+        :return:
+        """
+
+        start_time = timeit.default_timer()
+        random.seed()
+        for w in range(0, self.width, skip[0]):
+            for h in range(0, self.height, skip[1]):
+                if self.list_equal(self.array[w][h].colour, background_colour):
+                    colour = colours[random.randint(0, len(colours) - 1)]
+                    self.paint_fill(self.array[w][h], colour, background_colour)
+                    if timeit.default_timer() - start_time > 600:
+                        break
+
+            print("\rLoading: {:.0f}%".format(w / self.width * 100), end='')
+            if w % int(self.width/2) == 0:
+                img = Image.fromarray(self.export_array())
+                img.save(self.filename)
+
+        img = Image.fromarray(self.export_array())
+        img.save(self.filename)
+        print("Paint Fill Render Complete.", end='\r')
+
+    def grid(self, row_num, column_num, colour, stroke_weight):
+        grid_width = self.width - stroke_weight
+        grid_height = self.height - stroke_weight
+
+        # Drawing column lines
+        for x in range(0, grid_width, round(grid_width / column_num)):
+            start = self[x][0]
+            end = self[x][self.height - 1]
+            self.straight_line(start, end, colour, stroke_weight)
+
+        start = self[self.width - 1][0]
+        end = self[self.width - 1][grid_height - 1]
+        self.straight_line(start, end, colour, stroke_weight)
+
+        # Drawing row lines
+        for y in range(0, grid_height, round(grid_height / row_num)):
+            start = self[0][y]
+            end = self[grid_width - 1][y]
+            self.straight_line(start, end, colour, stroke_weight)
+
+        start = self[0][self.height - 1]
+        end = self[self.width - 1][self.height - 1]
+        self.straight_line(start, end, colour, stroke_weight)
