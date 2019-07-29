@@ -43,6 +43,43 @@ class Painter:
                 export_array[h, w] = self[w][h].colour
         return export_array
 
+    def invert_rgba_image_col(self):
+        for w in range(self.width):
+            for h in range(self.height):
+                col = self.inverse_rgb_colour(self[w][h].colour)
+                self[w][h].colour = col
+
+    def inverse_rgb_colour(self, colour):
+        inverse_colour = [None]*4
+        inverse_colour[0] = 255 - colour[0]
+        inverse_colour[1] = 255 - colour[1]
+        inverse_colour[2] = 255 - colour[2]
+        inverse_colour[3] = colour[3]
+        return inverse_colour
+
+    def convert_col_to_invisible(self, colour, replacement_colour=None, override=False):
+        for w in range(self.width):
+            for h in range(self.height):
+                if self.list_equal(self[w][h].colour, colour):
+                    if replacement_colour is not None:
+                        self[w][h].colour = replacement_colour
+                    self[w][h].line = True
+                elif override:
+                    if not self.list_equal(self[w][h].colour, replacement_colour):
+                        if replacement_colour is not None:
+                            self[w][h].colour = replacement_colour
+                        self[w][h].line = True
+
+    def pixel_equal(self, pixel1, pixel2):
+        if pixel1.x != pixel2.x or pixel1.y != pixel2.y:
+            return False
+        if not self.list_equal(pixel1.colour, pixel2.colour):
+            return False
+        if pixel1.line != pixel2.line:
+            return False
+
+        return True
+
     def list_equal(self, array1, array2):
         """Returns True if two lists are equal. Returns False otherwise"""
         if len(array1) != len(array2):
@@ -74,6 +111,31 @@ class Painter:
         """
         dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         return dist
+
+    def suitable_centre_end(self, start):
+        w = int(self.width / 4 + 0.5)
+        h = int(self.height / 4 + 0.5)
+
+        # TOO LEFT
+        if start.x < self.width / 2:
+            # TOO HIGH
+            if start.y < self.height / 2:
+                centre_end = Pixel(random.randint(start.x, self.width + w), random.randint(start.y, self.height + h))
+            # TOO LOW
+            else:
+                centre_end = Pixel(random.randint(start.x, self.width + w), random.randint(-h, start.y))
+        # TOO RIGHT
+        elif start.x > self.width / 2:
+            # TOO HIGH
+            if start.y < self.height / 2:
+                centre_end = Pixel(random.randint(-w, start.x), random.randint(start.y, self.height + h))
+            # TOO LOW
+            else:
+                centre_end = Pixel(random.randint(-w, start.x), random.randint(-h, start.y))
+        else:
+            centre_end = Pixel(random.randint(-w, self.width + w), random.randint(-h, self.height + h))
+
+        return centre_end
 
     def straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1):
         """
@@ -888,11 +950,9 @@ class Painter:
         random.seed()  # initializer for random methods
         time_start = timeit.default_timer()  # initializer for timeout function
 
-        w = int(self.width / 4 + 0.5)
-        h = int(self.height / 4 + 0.5)
+
         funcs = [self.straight_line, self.circle_fill, self.curve_centre,
                  self.paint_drop_line, self.paint_drop_curve_centre, self.paint_fill]
-        centre_end = Pixel(random.randint(-w, self.width + w), random.randint(-h, self.height + h), False)
         start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
         orig_start = start
         stroke = random.randint(stroke_range[0], stroke_range[1])
@@ -903,25 +963,7 @@ class Painter:
             colour = colours[random.randint(0, len(colours) - 1)]
             func = funcs[random.randint(0, len(funcs) - 1)]
 
-            # TOO LEFT
-            if start.x < self.width / 2:
-                # TOO HIGH
-                if start.y < self.height / 2:
-                    centre_end = Pixel(random.randint(start.x, self.width + w),
-                                       random.randint(start.y, self.height + h))
-                # TOO LOW
-                else:
-                    centre_end = Pixel(random.randint(start.x, self.width + w), random.randint(-h, start.y), False)
-            # TOO RIGHT
-            elif start.x > self.width / 2:
-                # TOO HIGH
-                if start.y < self.height / 2:
-                    centre_end = Pixel(random.randint(-w, start.x), random.randint(start.y, self.height + h), False)
-                # TOO LOW
-                else:
-                    centre_end = Pixel(random.randint(-w, start.x), random.randint(-h, start.y), False)
-            else:
-                centre_end = Pixel(random.randint(-w, self.width + w), random.randint(-h, self.height + h), False)
+            centre_end = self.suitable_centre_end(start)
 
             # [self.straight_line, self.circle_fill, self.curve_centre, self.paint_drop_line, self.paint_fill]
             # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
@@ -978,8 +1020,9 @@ class Painter:
 
         self.paint_drop_line(start, orig_start, colour, (stroke, orig_stroke))
 
-        img = Image.fromarray(self.export_array())
-        img.save(self.filename)
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
 
         for i in range(int(num_shapes*pf[1])):
             print("\rLoading: {:.0f}%".format(i / (num_shapes*pf[1]) * 100), end='')
@@ -997,3 +1040,4 @@ class Painter:
 
 
         return
+

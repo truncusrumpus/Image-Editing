@@ -77,7 +77,19 @@ class VisualTesting:
         # p.paint_fill_canvas_skip(colours, [0, 0, 0, 255], (1, 18))
 
         # ARTIST 5
-        p.artist5(100, (0, 0), colours, 1200, [[0, 0, 0, 255], 1], False)
+        # p.artist5(100, (0, 0), colours, 1200, [[0, 0, 0, 255], 1], False)
+
+        # INVERT RGBA IMAGE COLOURS
+        # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
+        # p = Painter(e.array)
+        # p.invert_rgba_image_col()
+
+        # STRAIGHT LINE CONTROLLED
+        # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # start = Pixel(0, 0)
+        # end = Pixel(1060, 510)
+        # p.straight_line_controlled(start, end, colour)
 
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")

@@ -4,6 +4,7 @@ class Pixel:
         self.y = y
         self.colour = colour
         self.line = False
+        self.prev_colour = None
 
     def adjacent_squares(self, array):
         """
