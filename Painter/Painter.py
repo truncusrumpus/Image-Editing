@@ -201,7 +201,7 @@ class Painter:
 
         return centre_end
 
-    def straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1):
+    def straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1, controlled=False):
         """
         Draws a straight line from the start pixel to the end pixel
         Eg: start = (10, 10), end = (100, 100), line = top left : bottom right
@@ -223,6 +223,9 @@ class Painter:
             if 0 <= start.x < self.width:
                 for y in range(start.y, end.y + 1):
                     if 0 <= y < self.height:
+                        if controlled is True:
+                            if self[start.x][y].line is True:
+                                return self[start.x][y]
                         if stroke_weight >= 0.5:
                             self.circle_fill(self[start.x][y], int(stroke_weight + 0.5), colour)
                         self[start.x][y].line = True
@@ -233,6 +236,9 @@ class Painter:
             if 0 <= start.y < self.height:
                 for x in range(start.x, end.x + 1):
                     if 0 <= x < self.width:
+                        if controlled is True:
+                            if [x][start.y].line is True:
+                                return self[x][start.y]
                         if stroke_weight >= 0.5:
                             self.circle_fill(self[x][start.y], int(stroke_weight + 0.5), colour)
                         self[x][start.y].line = True
@@ -242,6 +248,9 @@ class Painter:
         x_count = start.x
         y_count = start.y
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
+            if controlled is True:
+                if [x_count][y_count].line is True:
+                    return self[x_count][y_count]
             if stroke_weight >= 0.5:
                 self[x_count][y_count].colour = colour
             self[x_count][y_count].line = True
@@ -276,6 +285,9 @@ class Painter:
             x_count += m_inv_round * change
 
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
+            if controlled is True:
+                if [x_count][y_count].line is True:
+                    return self[x_count][y_count]
             if stroke_weight >= 0.5:
                 self[x_count][y_count].colour = colour
             self[x_count][y_count].line = True
@@ -339,6 +351,9 @@ class Painter:
 
             # Will draw a circle of radius equal to stroke_weight
             if 0 <= x_count < self.width and 0 <= y_count < self.height:
+                if controlled is True:
+                    if [x_count][y_count].line is True:
+                        return self[x_count][y_count]
                 if stroke_weight >= 0.5:
                     self.circle_fill(self[x_count][y_count], int(stroke_weight + 0.5), colour)
                 self[x_count][y_count].line = True
@@ -690,7 +705,7 @@ class Painter:
 
         return current
 
-    def curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1):
+    def curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1, controlled=False):
         """
         Draws a proportion of a circle (curve) from start Pixel with a centre Pixel.
 
@@ -1104,3 +1119,95 @@ class Painter:
 
         return
 
+    def artist6(self, num_shapes=10, stroke=1, colours=None, timeout=600, image_updating=False):
+
+        random.seed()  # initializer for random methods
+        time_start = timeit.default_timer()  # initializer for timeout function
+
+        start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+        orig_start = start
+        stroke = random.randint(stroke_range[0], stroke_range[1])
+        orig_stroke = stroke
+        paint_fill_counter = 0
+
+        for i in range(num_shapes):
+            colour = colours[random.randint(0, len(colours) - 1)]
+            func = funcs[random.randint(0, len(funcs) - 1)]
+
+            centre_end = self.suitable_centre_end(start)
+
+            # [self.straight_line, self.circle_fill, self.curve_centre, self.paint_drop_line, self.paint_fill]
+            # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
+            if func == self.straight_line:
+                start = func(start, centre_end, colour, stroke)
+
+            # circle_fill(self, centre, radius=1, colour=[0, 0, 0, 255], stroke=[0, 0, 0, 255])
+            elif func == self.circle_fill:
+                start = func(start, random.randint(stroke, stroke_range[1]), colour)
+
+            # curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1)
+            elif func == self.curve_centre:
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, stroke)
+
+            # paint_drop_curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=(1, 1))
+            elif func == self.paint_drop_curve_centre:
+                stroke_end = random.randint(stroke_range[0], stroke_range[1])
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, (stroke, stroke_end))
+                stroke = stroke_end
+
+            # paint_drop_line(self, start, end, colour=[0, 0, 0, 255], stroke=(1, 1))
+            elif func == self.paint_drop_line:
+                stroke_end = random.randint(stroke_range[0], stroke_range[1])
+                start = func(start, centre_end, colour, (stroke, stroke_end))
+                stroke = stroke_end
+
+            # paint_fill(self, start, fill_colour, background_colour)
+            elif func == self.paint_fill:
+                paint_fill_counter += 1
+
+            # Timeout function
+            if timeit.default_timer() - time_start > timeout:
+                break
+
+            # TESTING PURPOSES ONLY!!!
+            # img = Image.fromarray(self.export_array())
+            # img.save("test_output.png")
+
+            if num_shapes >= 1000:
+                image_update_index = 100
+            elif num_shapes >= 10:
+                image_update_index = 10
+            else:
+                image_update_index = num_shapes
+
+            if i % int(num_shapes / image_update_index + 0.5) == 0:
+                if image_updating:
+                    if self.filename != "":
+                        img = Image.fromarray(self.export_array())
+                        img.save(self.filename)
+                print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
+
+        self.paint_drop_line(start, orig_start, colour, (stroke, orig_stroke))
+
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
+
+        for i in range(int(num_shapes*pf[1])):
+            print("\rLoading: {:.0f}%".format(i / (num_shapes*pf[1]) * 100), end='')
+            start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+            colour = colours[random.randint(0, len(colours) - 1)]
+            if pf[0] is None:
+                self.paint_fill(start, colour, start.colour)
+            else:
+                self.paint_fill(start, colour, pf[0])
+            if i % num_shapes == 0 or i % int(num_shapes/2) == 0:
+                img = Image.fromarray(self.export_array())
+                img.save(self.filename)
+
+        print("\rRender Complete.")
+
+
+        return
