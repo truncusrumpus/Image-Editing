@@ -92,13 +92,12 @@ class VisualTesting:
         # p.straight_line_controlled(start, end, colour)
 
         # INTERPOLATE
-        e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test (1).png")
-        p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output1.png")
-
-        p.interpolate(0.8)
+        # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/output.png")
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # p.interpolate(0.8)
 
         e.load_array(p.export_array())
-        e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output1.png")
+        e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
 
 vt = VisualTesting()

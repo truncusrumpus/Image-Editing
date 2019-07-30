@@ -71,7 +71,7 @@ class Painter:
         for p in adj:
             if p is not False:
                 if p.colour is not False:
-                    if not self.list_almost_equal(p.colour, [0, 0, 0, 255], 40):
+                    if not self.list_almost_equal(p.colour, [0, 0, 0, 255], 30):
                         diff_pixels += 1
                     adj_coloured_count += 1
 
@@ -90,7 +90,10 @@ class Painter:
                         new_col[c] += p.colour[c] * adj_ip_index
 
         for c in range(len(new_col) - 1):
-            new_col[c] = int(new_col[c] + 0.5)
+            if new_col[c] >= 253.5:
+                new_col[c] = int(new_col[c] + 0.5)
+            else:
+                new_col[c] = int(new_col[c] + 2.5)
         cell.colour = new_col
 
     def interpolate(self, interpolate_index):
