@@ -17,7 +17,7 @@ class Tester:
         p.artist5(5000, (1, 1), colours, 1200, [[255, 255, 255, 255], 1])
 
         e.load_array(p.export_array())
-        e.save_image(filename)
+        e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
 
 test = Tester()

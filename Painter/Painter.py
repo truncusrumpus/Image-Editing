@@ -57,6 +57,56 @@ class Painter:
         inverse_colour[3] = colour[3]
         return inverse_colour
 
+    def interpolate_pixel(self, cell, ip_index):
+        # Applying the weighting given by the user (ip_index) to the
+        new_col = cell.colour
+        for c in range(len(new_col) - 1):
+            new_col[c] = round(ip_index * new_col[c], 8)
+
+        diff_pixels = 0
+        adj_coloured_count = 0
+        adj = cell.adjacent_squares(self.array)
+
+        # Counting how many of the adjacent pixels are coloured and actually exist
+        for p in adj:
+            if p is not False:
+                if p.colour is not False:
+                    if not self.list_almost_equal(p.colour, [0, 0, 0, 255], 40):
+                        diff_pixels += 1
+                    adj_coloured_count += 1
+
+        # Only interpolating pixels where the proportion of 'different' pixels is greater than
+        # the ip_index given (eg: for ip_index = 0.8, 4/5 or more pixels must be 'different'
+        if diff_pixels/adj_coloured_count < ip_index:
+            return
+
+        # Calculating weightings for each of the adjacent pixels' colours
+        adj_ip_index = round(abs(1 - ip_index) / adj_coloured_count, 8)
+
+        for p in adj:
+            if p is not False:
+                if p.colour is not False:
+                    for c in range(len(p.colour) - 1):
+                        new_col[c] += p.colour[c] * adj_ip_index
+
+        for c in range(len(new_col) - 1):
+            new_col[c] = int(new_col[c] + 0.5)
+        cell.colour = new_col
+
+    def interpolate(self, interpolate_index):
+        for w in range(self.width):
+            for h in range(self.height):
+                self.interpolate_pixel(self[w][h], interpolate_index)
+                if self.width >= 100:
+                    if w % int(0.01 * self.width + 0.5) == 0:
+                        print("\rLoading: {:.0f}%".format(w / self.width * 100), end='')
+            if w % int(0.25 * self.width + 0.5) == 0:
+                if self.filename != "":
+                    img = Image.fromarray(self.export_array())
+                    img.save(self.filename)
+
+        print("\rRender Complete.")
+
     def convert_col_to_invisible(self, colour, replacement_colour=None, override=False):
         for w in range(self.width):
             for h in range(self.height):
@@ -86,6 +136,17 @@ class Painter:
             return False
         for i in range(len(array1)):
             if array1[i] != array2[i]:
+                return False
+        return True
+
+    def list_almost_equal(self, array1, array2, error):
+        """Returns True if two lists are almost equal. Meaning, if the difference in
+        each element's value in the two lists is less than error, returns True.
+        Returns False otherwise"""
+        if len(array1) != len(array2):
+            return False
+        for i in range(len(array1)):
+            if abs(array1[i] - array2[i]) > error:
                 return False
         return True
 
@@ -949,7 +1010,6 @@ class Painter:
 
         random.seed()  # initializer for random methods
         time_start = timeit.default_timer()  # initializer for timeout function
-
 
         funcs = [self.straight_line, self.circle_fill, self.curve_centre,
                  self.paint_drop_line, self.paint_drop_curve_centre, self.paint_fill]

@@ -66,8 +66,31 @@ class TestPainter(unittest.TestCase):
 
         list = [1, 2, 3]
         self.assertEqual(p.list_avg(list), 2)
-
         self.assertEqual(p.list_avg(list), 0.1)
+
+    def test_interpolate_pixel(self):
+        nine_pixels = [[None, None, None], [None, None, None], [None, None, None]]
+        for x in range(3):
+            for y in range(3):
+                nine_pixels[x][y] = Pixel(x, y, [30*(x+y), 30*(x+y), 30*(x+y), 255])
+
+        nine_pixels[2][2].colour = [160, 160, 160, 255]
+        p = Painter([[None]])
+        p.array = nine_pixels
+        p.interpolate_pixel(nine_pixels[1][1], 0.8)
+
+        self.assertEqual(nine_pixels[1][1].colour, [61, 61, 61, 255])
+
+        nine_pixels[0][0].colour = False
+        nine_pixels[0][1].colour = False
+        nine_pixels[0][2] = False
+        nine_pixels[1][0].colour = [200, 0, 0, 255]
+        nine_pixels[1][1].colour = [60, 60, 60, 255]
+
+        p.array = nine_pixels
+        p.interpolate_pixel(nine_pixels[1][1], 0.8)
+
+        self.assertEqual(nine_pixels[1][1].colour, [72, 64, 64, 255])
 
     def test_list_diff_avg(self):
         p = Painter([[None]])

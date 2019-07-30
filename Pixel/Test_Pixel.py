@@ -1,7 +1,6 @@
 import unittest
 from Editor.Editor import Editor
 from Painter.Painter import Painter
-from Pixel import Pixel
 
 
 class TestPixel(unittest.TestCase):

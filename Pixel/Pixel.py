@@ -129,3 +129,4 @@ class Pixel:
             up_left = Pixel(self.x - 1, self.y - 1, False)
 
         return [up, up_right, right, down_right, down, down_left, left, up_left]
+
