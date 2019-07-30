@@ -96,6 +96,12 @@ class VisualTesting:
         # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
         # p.interpolate(0.8)
 
+        # ARTIST 6
+        e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
+        p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        p.convert_col_to_invisible([0, 0, 0, 255], [255, 255, 255, 255], True)
+        p.artist6(10000000, 1, [[0, 0, 0, 255]], 1200)
+
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
