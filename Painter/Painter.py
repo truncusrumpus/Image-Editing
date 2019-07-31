@@ -43,6 +43,19 @@ class Painter:
                 export_array[h, w] = self[w][h].colour
         return export_array
 
+    def ori(self, x, y, width, height, col):
+        r = int(height/4 + 0.5)
+        w = int(width/5)
+        wd2 = int(w/2 + 0.5)
+        # o
+        self.curve_centre(self[x][y + wd2], self[x + wd2][y + wd2], 1, col, int(w/3))
+        # r
+        self.straight_line(self[x + 2*w][y + r], self[x + 2*w][y + 2*r], col, int(w/3))
+        self.straight_line(self[x + 2*w][y + int(1/6 * height + 0.5)], self[x + 3*w][y + int(1/6 * height + 0.5)], col, int(w/3))
+        # i
+        self.straight_line(self[x + 4*w][y + int(2/6 * height + 0.5)], self[x + 4*w][y + int(3*r + 0.5)], col, int(w/3))
+        self.circle_fill(self[x + 4*w][y], int(wd2 + 0.5), col)
+
     def invert_rgba_image_col(self):
         for w in range(self.width):
             for h in range(self.height):
@@ -120,7 +133,7 @@ class Painter:
                         self[w][h].line = True
                 else:
                     if replacement_colour is not None:
-                        if not self.list_equal(self[w][h].colour, replacement_colour):
+                        if not self.list_almost_equal(self[w][h].colour, replacement_colour, 20):
                             self[w][h].colour = replacement_colour
                             self[w][h].line = True
 
@@ -133,6 +146,11 @@ class Painter:
             return False
 
         return True
+
+    def copy_pixel(self, input_pixel):
+        pixel = Pixel(input_pixel.x, input_pixel.y, input_pixel.colour)
+        pixel.line = input_pixel.line
+        return pixel
 
     def list_equal(self, array1, array2):
         """Returns True if two lists are equal. Returns False otherwise"""
@@ -245,7 +263,7 @@ class Painter:
                             if self[x][start.y].line is True:
                                 return self[x][start.y]
                         else:
-                            self[start.x][y].line = True
+                            self[x][start.y].line = True
                         if stroke_weight >= 0.5:
                             self.circle_fill(self[x][start.y], int(stroke_weight + 0.5), colour)
             return end
@@ -1130,42 +1148,39 @@ class Painter:
 
         return
 
-    def artist6(self, num_shapes=10, stroke_weight=1,
-                colours=None, timeout=600, image_updating=False):
+    def artist6(self, num_shapes=10, stroke_weight=1, colours=None, replace_colour=None, timeout=600):
+
+        print("Loading...", end='')
+        # Storing pixels with invisible line to be restored later
+        invis_queue = FillQueue()
+        for w in range(self.width):
+            for h in range(self.height):
+                if self[w][h].line is True:
+                    invis_queue.append(self.copy_pixel(self[w][h]))
 
         random.seed()  # initializer for random methods
         time_start = timeit.default_timer()  # initializer for timeout function
 
-        funcs = [self.straight_line]
         # funcs = [self.straight_line, self.curve_centre]
-        start = self[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
-        while start.line is True:
-            start = self[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+        funcs = [self.straight_line]
+
+        start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
         orig_start = start
 
         for i in range(num_shapes):
             colour = colours[random.randint(0, len(colours) - 1)]
             func = funcs[random.randint(0, len(funcs) - 1)]
 
-            centre_end = self[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+            centre_end = self.suitable_centre_end(start)
 
-            # [self.straight_line, self.curve_centre]
-            # straight_line(start, end, colour=[0, 0, 0, 255], stroke_weight=1, controlled=False)
+            # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
             if func == self.straight_line:
-                start = func(start, centre_end, colour, stroke_weight, True)
+                start = func(start, centre_end, colour, stroke_weight)
 
-            # curve_centre(start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1, controlled=False)
+            # curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1)
             elif func == self.curve_centre:
                 proportion = random.randint(100, 900) / 1000
-                start = func(start, centre_end, proportion, colour, stroke_weight, True)
-
-            if start.line is True:
-                adj = start.adjacent_squares(self.array)
-                for cell in adj:
-                    if cell is not False:
-                        if cell.line is False:
-                            start = cell
-                            break
+                start = func(start, centre_end, proportion, colour, stroke_weight)
 
             # Timeout function
             if timeit.default_timer() - time_start > timeout:
@@ -1179,18 +1194,22 @@ class Painter:
                 image_update_index = num_shapes
 
             if i % int(num_shapes / image_update_index + 0.5) == 0:
-                if image_updating:
-                    if self.filename != "":
-                        img = Image.fromarray(self.export_array())
-                        img.save(self.filename)
                 print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
 
-            if i % int(0.25*num_shapes + 0.5) == 0:
+            if i % int(0.25 * num_shapes + 0.5) == 0:
                 if self.filename != "":
                     img = Image.fromarray(self.export_array())
                     img.save(self.filename)
 
-        self.straight_line(start, orig_start, colour, stroke_weight, True)
+        self.straight_line(start, orig_start, colour, stroke_weight)
+
+        while not invis_queue.is_empty():
+            pixel = invis_queue.serve()
+            if replace_colour is not None:
+                self[pixel.x][pixel.y].colour = replace_colour
+            else:
+                self[pixel.x][pixel.y].colour = pixel.colour
+            self[pixel.x][pixel.y].line = pixel.line
 
         if self.filename != "":
             img = Image.fromarray(self.export_array())
