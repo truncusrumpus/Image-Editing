@@ -239,6 +239,11 @@ class Painter:
         assert type(start.x) is int and type(start.y) is int, "Coord's are not int's"
         assert type(end.x) is int and type(end.y) is int, "Coord's are not int's"
 
+        if start.line is True:
+            return
+
+        prev = start
+
         # Gradient = Undefined (vertical line)
         if start.x == end.x:
             if 0 <= start.x < self.width:
@@ -246,7 +251,8 @@ class Painter:
                     if 0 <= y < self.height:
                         if controlled is True:
                             if self[start.x][y].line is True:
-                                return self[start.x][y]
+                                return prev
+                            prev = self[start.x][y]
                         else:
                             self[start.x][y].line = True
                         if stroke_weight >= 0.5:
@@ -261,7 +267,8 @@ class Painter:
                     if 0 <= x < self.width:
                         if controlled is True:
                             if self[x][start.y].line is True:
-                                return self[x][start.y]
+                                return prev
+                            prev = self[x][start.y]
                         else:
                             self[x][start.y].line = True
                         if stroke_weight >= 0.5:
@@ -274,10 +281,12 @@ class Painter:
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
             if controlled is True:
                 if self[x_count][y_count].line is True:
-                    return self[x_count][y_count]
+                    return prev
+                prev = self[x_count][y_count]
+            else:
+                self[x_count][y_count].line = True
             if stroke_weight >= 0.5:
                 self[x_count][y_count].colour = colour
-            self[x_count][y_count].line = True
 
         m = (end.y - start.y) / (end.x - start.x)  # m = gradient
         m_down = math.floor(m)
@@ -311,7 +320,8 @@ class Painter:
         if 0 <= x_count < self.width and 0 <= y_count < self.height:
             if controlled is True:
                 if self[x_count][y_count].line is True:
-                    return self[x_count][y_count]
+                    return prev
+                prev = self[x_count][y_count]
             else:
                 self[x_count][y_count].line = True
             if stroke_weight >= 0.5:
@@ -378,7 +388,8 @@ class Painter:
             if 0 <= x_count < self.width and 0 <= y_count < self.height:
                 if controlled is True:
                     if self[x_count][y_count].line is True:
-                        return self[x_count][y_count]
+                        return prev
+                    prev = self[x_count][y_count]
                 else:
                     self[x_count][y_count].line = True
                 if stroke_weight >= 0.5:
@@ -1217,5 +1228,61 @@ class Painter:
 
         print("\rRender Complete.")
 
+
+        return
+
+    def artist7(self, num_shapes=10, stroke_weight=1, colours=None, timeout=600):
+
+        print("Loading...", end='')
+
+        random.seed()  # initializer for random methods
+        time_start = timeit.default_timer()  # initializer for timeout function
+
+        # funcs = [self.straight_line, self.curve_centre]
+        funcs = [self.straight_line]
+
+        start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+        while start.line is True:
+            start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+
+        for i in range(num_shapes):
+            colour = colours[random.randint(0, len(colours) - 1)]
+            func = funcs[random.randint(0, len(funcs) - 1)]
+
+            centre_end = self.suitable_centre_end(start)
+
+            # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
+            if func == self.straight_line:
+                start = func(start, centre_end, colour, stroke_weight, True)
+
+            # curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1)
+            elif func == self.curve_centre:
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, stroke_weight)
+
+            # Timeout function
+            if timeit.default_timer() - time_start > timeout:
+                break
+
+            if num_shapes >= 1000:
+                image_update_index = 100
+            elif num_shapes >= 10:
+                image_update_index = 10
+            else:
+                image_update_index = num_shapes
+
+            if i % int(num_shapes / image_update_index + 0.5) == 0:
+                print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
+
+            if i % int(0.25 * num_shapes + 0.5) == 0:
+                if self.filename != "":
+                    img = Image.fromarray(self.export_array())
+                    img.save(self.filename)
+
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
+
+        print("\rRender Complete.")
 
         return

@@ -11,7 +11,7 @@ class VisualTesting:
     def main_testing(self):
         colour = [255, 0, 0, 255]
         # colours = [colour, [0, 255, 0, 255], [0, 0, 255, 255]]
-        colours = [colour]
+        # colours = [colour]
         e = Editor()
         e.create_rgba_array(1000, 800)
         p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
@@ -85,11 +85,24 @@ class VisualTesting:
         # p.invert_rgba_image_col()
 
         # STRAIGHT LINE CONTROLLED
-        # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
+        # e = Editor()
+        # e.create_rgba_array(5, 5, [0, 0, 0, 255])
         # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
-        # start = Pixel(0, 0)
-        # end = Pixel(1060, 510)
-        # p.straight_line_controlled(start, end, colour)
+        # p.straight_line(p[3][0], p[3][4], [255, 0, 0, 255])
+        # finish = p.straight_line(p[0][2], p[4][2], [255, 0, 0, 255], 1, True)
+        # assert p.pixel_equal(finish, p[2][2]), "finish = ({0}, {1})".format(finish.x, finish.y)
+        # assert p.list_equal(p[4][2].colour, [0, 0, 0, 255])
+
+        # CONVERT COL TO INVISIBLE
+        # e = Editor()
+        # e.create_rgba_array(5, 5, [0, 0, 0, 255])
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # p.straight_line(p[3][0], p[3][4], [255, 0, 0, 255], 1, True)
+        # # p.convert_col_to_invisible([255, 0, 0, 255], [0, 0, 0, 255], True)
+        # p.convert_col_to_invisible([255, 0, 0, 255])
+        # finish = p.straight_line(p[0][2], p[4][2], [255, 0, 0, 255], 1, True)
+        # assert p.pixel_equal(finish, p[2][2]), "finish = ({0}, {1})".format(finish.x, finish.y)
+        # assert p.list_equal(p[4][2].colour, [0, 0, 0, 255])
 
         # INTERPOLATE
         # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/output.png")
@@ -97,6 +110,16 @@ class VisualTesting:
         # p.interpolate(0.8)
 
         # ARTIST 6
+        e = Editor()
+        e.create_rgba_array(500, 500, [0, 0, 0, 255])
+        p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        p.circle_fill(p[250][250], 100, [255, 255, 255, 255])
+        p.convert_col_to_invisible([255, 255, 255, 255], [0, 0, 0, 255])
+        # p.convert_col_to_invisible([255, 255, 255, 255], [0, 0, 0, 255], True)
+        # p.straight_line(p[0][250], p[490][250], [255, 255, 255, 255], 1, True)
+        # p.straight_line(p[10][490], p[490][10], [255, 255, 255, 255], 1, True)
+        # p.straight_line(p[10][10], p[490][490], [255, 255, 255, 255], 1, True)
+        p.artist7(10000000, 1, [[255, 255, 255, 255]], 1200)
 
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
