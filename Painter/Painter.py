@@ -71,11 +71,6 @@ class Painter:
         return inverse_colour
 
     def interpolate_pixel(self, cell, ip_index):
-        # Applying the weighting given by the user (ip_index) to the
-        new_col = cell.colour
-        for c in range(len(new_col) - 1):
-            new_col[c] = round(ip_index * new_col[c], 8)
-
         diff_pixels = 0
         adj_coloured_count = 0
         adj = cell.adjacent_squares(self.array)
@@ -93,6 +88,11 @@ class Painter:
         if diff_pixels/adj_coloured_count < ip_index:
             return
 
+        # Applying the weighting given by the user (ip_index) to the
+        new_col = [None] * (len(cell.colour) - 1)
+        for c in range(len(new_col)):
+            new_col[c] = round(ip_index * cell.colour[c], 8)
+
         # Calculating weightings for each of the adjacent pixels' colours
         adj_ip_index = round(abs(1 - ip_index) / adj_coloured_count, 8)
 
@@ -107,7 +107,9 @@ class Painter:
                 new_col[c] = int(new_col[c] + 0.5)
             else:
                 new_col[c] = int(new_col[c] + 2.5)
-        cell.colour = new_col
+
+        new_col.append(255)
+        self[cell.x][cell.y].colour = new_col
 
     def interpolate(self, interpolate_index):
         for w in range(self.width):
@@ -140,8 +142,12 @@ class Painter:
     def pixel_equal(self, pixel1, pixel2):
         if pixel1.x != pixel2.x or pixel1.y != pixel2.y:
             return False
-        if not self.list_equal(pixel1.colour, pixel2.colour):
-            return False
+        if pixel1.colour is False or pixel2.colour is False:
+            if pixel1.colour != pixel2.colour:
+                return False
+        else:
+            if not self.list_equal(pixel1.colour, pixel2.colour):
+                return False
         if pixel1.line != pixel2.line:
             return False
 
@@ -1245,11 +1251,14 @@ class Painter:
         while start.line is True:
             start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
 
+        prev_start = start
+
         for i in range(num_shapes):
             colour = colours[random.randint(0, len(colours) - 1)]
             func = funcs[random.randint(0, len(funcs) - 1)]
 
             centre_end = self.suitable_centre_end(start)
+            # print("start: {0} , c_end: {1}".format(start, centre_end))
 
             # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
             if func == self.straight_line:
@@ -1259,6 +1268,14 @@ class Painter:
             elif func == self.curve_centre:
                 proportion = random.randint(100, 900) / 1000
                 start = func(start, centre_end, proportion, colour, stroke_weight)
+
+            # If the function is getting caught in a position it cannot move from, start from somewhere else
+            if self.pixel_equal(start, prev_start):
+                start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+                while start.line is True:
+                    start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+
+            prev_start = start
 
             # Timeout function
             if timeit.default_timer() - time_start > timeout:

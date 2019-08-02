@@ -119,7 +119,8 @@ class VisualTesting:
         # p.straight_line(p[0][250], p[490][250], [255, 255, 255, 255], 1, True)
         # p.straight_line(p[10][490], p[490][10], [255, 255, 255, 255], 1, True)
         # p.straight_line(p[10][10], p[490][490], [255, 255, 255, 255], 1, True)
-        p.artist7(10000000, 1, [[255, 255, 255, 255]], 1200)
+        p.artist7(1000, 1, [[255, 255, 255, 255]], 1200)
+        p.interpolate(0.6)
 
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")

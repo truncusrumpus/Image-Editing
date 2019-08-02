@@ -4,7 +4,6 @@ class Pixel:
         self.y = y
         self.colour = colour
         self.line = False
-        self.prev_colour = None
 
     def adjacent_squares(self, array):
         """
@@ -129,4 +128,7 @@ class Pixel:
             up_left = Pixel(self.x - 1, self.y - 1, False)
 
         return [up, up_right, right, down_right, down, down_left, left, up_left]
+
+    def __str__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
 
