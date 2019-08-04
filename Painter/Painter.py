@@ -131,6 +131,36 @@ class Painter:
                             self[w][h].colour = replacement_colour
                             self[w][h].line = True
 
+    def convert_col(self, colours, replacement_colour=None, replace_col=True, col_override=False, invis_override=False):
+        for w in range(self.width):
+            for h in range(self.height):
+                # Modifying pixel.colour:
+                if replace_col:
+                    # Modifying pixel.colour depending on pixel.colour:
+                    if col_override is False:
+                        # If pixel.colour is not replacement_colour:
+                        if self.col_in_colours(self[w][h].colour, colours):
+                            self[w][h].colour = replacement_colour
+                            if invis_override:
+                                self[w][h].line = True
+                    # pixel.colour will not affect result:
+                    else:
+                        # If pixel.colour is not replacement_colour:
+                        if not self.list_equal(self[w][h].colour, replacement_colour):
+                            self[w][h].colour = replacement_colour
+                            if invis_override:
+                                self[w][h].line = True
+                # Not modifying pixel.colour:
+                else:
+                    if invis_override:
+                        self[w][h].line = True
+
+    def col_in_colours(self, colour, list_of_col):
+        for col in list_of_col:
+            if self.list_equal(colour, col):
+                return True
+        return False
+
     def pixel_equal(self, pixel1, pixel2):
         if pixel1.x != pixel2.x or pixel1.y != pixel2.y:
             return False
