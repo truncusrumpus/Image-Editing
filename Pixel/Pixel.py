@@ -130,5 +130,5 @@ class Pixel:
         return [up, up_right, right, down_right, down, down_left, left, up_left]
 
     def __str__(self):
-        return "(" + str(self.x) + ", " + str(self.y) + ")"
+        return "(" + str(self.x) + ", " + str(self.y) + ", " + str(self.line) + ")"
 

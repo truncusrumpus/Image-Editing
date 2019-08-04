@@ -12,9 +12,9 @@ class VisualTesting:
         colour = [255, 0, 0, 255]
         # colours = [colour, [0, 255, 0, 255], [0, 0, 255, 255]]
         # colours = [colour]
-        e = Editor()
-        e.create_rgba_array(1000, 800)
-        p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # e = Editor()
+        # e.create_rgba_array(1000, 800)
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
         # STRAIGHT LINE
         # start = p.array[2][1]
@@ -109,18 +109,13 @@ class VisualTesting:
         # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
         # p.interpolate(0.8)
 
-        # ARTIST 6
-        e = Editor()
-        e.create_rgba_array(500, 500, [0, 0, 0, 255])
+        # ARTIST 7
+        e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
         p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
-        p.circle_fill(p[250][250], 100, [255, 255, 255, 255])
-        p.convert_col_to_invisible([255, 255, 255, 255], [0, 0, 0, 255])
-        # p.convert_col_to_invisible([255, 255, 255, 255], [0, 0, 0, 255], True)
-        # p.straight_line(p[0][250], p[490][250], [255, 255, 255, 255], 1, True)
-        # p.straight_line(p[10][490], p[490][10], [255, 255, 255, 255], 1, True)
-        # p.straight_line(p[10][10], p[490][490], [255, 255, 255, 255], 1, True)
-        p.artist7(1000, 1, [[255, 255, 255, 255]], 1200)
-        p.interpolate(0.6)
+        p.convert_col_to_invisible([0, 0, 0, 0], [255, 255, 255, 255], True)
+        p.artist7(500, 10, [[10, 10, 100, 255]], 600)
+        # p.straight_line(p[10][10], p[1050][500], colour, 20, True)
+        p.interpolate(0.5)
 
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")

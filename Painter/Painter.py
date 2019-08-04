@@ -28,7 +28,11 @@ class Painter:
         formatted_array = [[None for _ in range(self.height)] for _ in range(self.width)]
         for w in range(self.width):
             for h in range(self.height):
-                formatted_array[w][h] = Pixel(w, h, array[h][w])
+                if len(array[h][w]) == 4:
+                    formatted_array[w][h] = Pixel(w, h, array[h][w])
+                elif len(array[h][w]) == 3:
+                    col = [array[h][w][0]] + [array[h][w][1]] + [array[h][w][2]] + [255]
+                    formatted_array[w][h] = Pixel(w, h, col)
         return formatted_array
 
     def export_array(self):
@@ -42,19 +46,6 @@ class Painter:
             for h in range(self.height):
                 export_array[h, w] = self[w][h].colour
         return export_array
-
-    def ori(self, x, y, width, height, col):
-        r = int(height/4 + 0.5)
-        w = int(width/5)
-        wd2 = int(w/2 + 0.5)
-        # o
-        self.curve_centre(self[x][y + wd2], self[x + wd2][y + wd2], 1, col, int(w/3))
-        # r
-        self.straight_line(self[x + 2*w][y + r], self[x + 2*w][y + 2*r], col, int(w/3))
-        self.straight_line(self[x + 2*w][y + int(1/6 * height + 0.5)], self[x + 3*w][y + int(1/6 * height + 0.5)], col, int(w/3))
-        # i
-        self.straight_line(self[x + 4*w][y + int(2/6 * height + 0.5)], self[x + 4*w][y + int(3*r + 0.5)], col, int(w/3))
-        self.circle_fill(self[x + 4*w][y], int(wd2 + 0.5), col)
 
     def invert_rgba_image_col(self):
         for w in range(self.width):
@@ -123,18 +114,19 @@ class Painter:
                     img = Image.fromarray(self.export_array())
                     img.save(self.filename)
 
-        print("\rRender Complete.")
+        print("\rInterpolate Complete.")
 
     def convert_col_to_invisible(self, colour, replacement_colour=None, override=False):
         for w in range(self.width):
             for h in range(self.height):
-                if not override:
+                if not override:    # override = False (default)
                     if self.list_equal(self[w][h].colour, colour):
                         if replacement_colour is not None:
                             self[w][h].colour = replacement_colour
                         self[w][h].line = True
-                else:
+                else:   # override = True
                     if replacement_colour is not None:
+                        # if self[w][h].colour != replacement_colour:
                         if not self.list_almost_equal(self[w][h].colour, replacement_colour, 20):
                             self[w][h].colour = replacement_colour
                             self[w][h].line = True
@@ -246,7 +238,7 @@ class Painter:
         assert type(end.x) is int and type(end.y) is int, "Coord's are not int's"
 
         if start.line is True:
-            return
+            return start
 
         prev = start
 
@@ -425,7 +417,8 @@ class Painter:
                 if 0 <= x < self.width and 0 <= y < self.height:
                     if not self.list_equal(self[x][y].colour, colour):
                         if self.dist_2d(centre.x, centre.y, x, y) <= radius:
-                            self[x][y].colour = colour
+                            if self[x][y].line is not True:
+                                self[x][y].colour = colour
 
         return centre
 
@@ -1257,7 +1250,8 @@ class Painter:
             colour = colours[random.randint(0, len(colours) - 1)]
             func = funcs[random.randint(0, len(funcs) - 1)]
 
-            centre_end = self.suitable_centre_end(start)
+            centre_end = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+            # centre_end = self.suitable_centre_end(start)
             # print("start: {0} , c_end: {1}".format(start, centre_end))
 
             # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
