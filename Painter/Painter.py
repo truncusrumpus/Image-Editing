@@ -8,10 +8,15 @@ from Pixel.Pixel import Pixel
 
 
 class Painter:
-    def __init__(self, array, filename=""):
-        self.width = len(array[0])
-        self.height = len(array)
-        self.array = self.format_array(array)
+    def __init__(self, array=None, filename=""):
+        if array is not None:
+            self.width = len(array[0])
+            self.height = len(array)
+            self.array = self.format_array(array)
+        else:
+            self.width = 0
+            self.height = 0
+            self.array = None
         self.filename = filename
 
     def __getitem__(self, index):
@@ -166,6 +171,16 @@ class Painter:
                 return True
         return False
 
+    def randomize_list(self, list):
+        random_list = [None]*len(list)
+        random.seed()
+        index = 0
+        while len(list) > 0:
+            rand_index = random.randint(0, len(list) - 1)
+            random_list[index] = list.pop(rand_index)
+            index += 1
+        return random_list
+
     def pixel_equal(self, pixel1, pixel2):
         if pixel1.x != pixel2.x or pixel1.y != pixel2.y:
             return False
@@ -195,6 +210,15 @@ class Painter:
             if array1[i] != array2[i]:
                 return False
         return True
+
+    def weighted_random_bool(self, true_weighting):
+        random.seed()
+        ratio = round(true_weighting, 2)
+        num = random.randrange(0, 100, 1)
+        num = num / 100
+        if num <= ratio:
+            return True
+        return False
 
     def list_almost_equal(self, array1, array2, error):
         """Returns True if two lists are almost equal. Meaning, if the difference in
@@ -1201,7 +1225,94 @@ class Painter:
 
         return
 
-    def artist6(self, num_shapes=10, stroke_weight=1, colours=None, replace_colour=None, timeout=600):
+    def artist6(self, num_shapes=10, stroke_range=(1, 100),
+                colours=None, timeout=600, image_updating=False):
+        """
+        Includes paint_fill - paint_fill runs num_shapes times post-order with other methods
+
+        :param num_shapes:
+        :param stroke_range:
+        :param colours:
+        :param timeout:
+        :param image_updating: Controls whether the actual image is updated on each iteration
+        :return:
+        """
+
+        random.seed()  # initializer for random methods
+        time_start = timeit.default_timer()  # initializer for timeout function
+
+        funcs = [self.straight_line, self.circle_fill, self.curve_centre,
+                 self.paint_drop_line, self.paint_drop_curve_centre]
+        start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+        orig_start = start
+        stroke = random.randint(stroke_range[0], stroke_range[1])
+        orig_stroke = stroke
+
+        for i in range(num_shapes):
+            colour = colours[random.randint(0, len(colours) - 1)]
+            func = funcs[random.randint(0, len(funcs) - 1)]
+
+            centre_end = self.suitable_centre_end(start)
+
+            # [self.straight_line, self.circle_fill, self.curve_centre, self.paint_drop_line, self.paint_fill]
+            # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
+            if func == self.straight_line:
+                start = func(start, centre_end, colour, stroke)
+
+            # circle_fill(self, centre, radius=1, colour=[0, 0, 0, 255], stroke=[0, 0, 0, 255])
+            elif func == self.circle_fill:
+                start = func(start, random.randint(stroke, stroke_range[1]), colour)
+
+            # curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1)
+            elif func == self.curve_centre:
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, stroke)
+
+            # paint_drop_curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=(1, 1))
+            elif func == self.paint_drop_curve_centre:
+                stroke_end = random.randint(stroke_range[0], stroke_range[1])
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, (stroke, stroke_end))
+                stroke = stroke_end
+
+            # paint_drop_line(self, start, end, colour=[0, 0, 0, 255], stroke=(1, 1))
+            elif func == self.paint_drop_line:
+                stroke_end = random.randint(stroke_range[0], stroke_range[1])
+                start = func(start, centre_end, colour, (stroke, stroke_end))
+                stroke = stroke_end
+
+            # Timeout function
+            if timeit.default_timer() - time_start > timeout:
+                break
+
+            if num_shapes >= 1000:
+                image_update_index = 100
+            elif num_shapes >= 10:
+                image_update_index = 10
+            else:
+                image_update_index = num_shapes
+
+            if i % int(num_shapes / image_update_index + 0.5) == 0:
+                if image_updating:
+                    if self.filename != "":
+                        img = Image.fromarray(self.export_array())
+                        img.save(self.filename)
+                print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
+
+        self.paint_drop_line(start, orig_start, colour, (stroke, orig_stroke))
+
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
+
+        print("\rRender Complete.")
+
+
+        return
+
+    def artist69(self, num_shapes=10, stroke_weight=1, colours=None, replace_colour=None, timeout=600):
+        """Draws lines across the canvas, saving all pixels with .line=True and restoring
+        them after the function has run to replace_colour or to their previous .colour"""
 
         print("Loading...", end='')
         # Storing pixels with invisible line to be restored later
@@ -1273,7 +1384,9 @@ class Painter:
 
         return
 
-    def artist7(self, num_shapes=10, stroke_weight=1, colours=None, timeout=600):
+    def artist70(self, num_shapes=10, stroke_weight=1, colours=None, timeout=600):
+        """Draws lines across the canvas, avoiding all pixels with .line=True
+        (No restoring or saving required)"""
 
         print("Loading...", end='')
 
@@ -1329,6 +1442,80 @@ class Painter:
                 print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
 
             if i % int(0.25 * num_shapes + 0.5) == 0:
+                if self.filename != "":
+                    img = Image.fromarray(self.export_array())
+                    img.save(self.filename)
+
+        if self.filename != "":
+            img = Image.fromarray(self.export_array())
+            img.save(self.filename)
+
+        print("\rRender Complete.")
+
+        return
+
+    def artist71(self, num_shapes=10, stroke_weight=1, colours=None, control=True, timeout=600):
+        """Draws lines across the canvas, avoiding all pixels with .line=True
+        (No restoring or saving required). """
+
+        print("Loading...", end='')
+
+        random.seed()  # initializer for random methods
+        time_start = timeit.default_timer()  # initializer for timeout function
+
+        # funcs = [self.straight_line, self.curve_centre]
+        funcs = [self.straight_line]
+
+        start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+        while start.line is True:
+            start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+
+        prev_start = start
+
+        for i in range(num_shapes):
+            colour = colours[random.randint(0, len(colours) - 1)]
+            func = funcs[random.randint(0, len(funcs) - 1)]
+
+            centre_end = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+            # centre_end = self.suitable_centre_end(start)
+            # print("start: {0} , c_end: {1}".format(start, centre_end))
+
+            # straight_line(self, start, end, colour=[0, 0, 0, 255], stroke_weight=1)
+            if func == self.straight_line:
+                if control:
+                    weighted_bool = self.weighted_random_bool(i/num_shapes)
+                    start = func(start, centre_end, colour, stroke_weight, weighted_bool)
+                else:
+                    start = func(start, centre_end, colour, stroke_weight, True)
+
+            # curve_centre(self, start, centre, proportion=0.25, colour=[0, 0, 0, 255], stroke_weight=1)
+            elif func == self.curve_centre:
+                proportion = random.randint(100, 900) / 1000
+                start = func(start, centre_end, proportion, colour, stroke_weight)
+
+            # If the function is getting caught in a position it cannot move from, start from somewhere else
+            if self.pixel_equal(start, prev_start):
+                start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+                while start.line is True:
+                    start = self.array[random.randint(0, self.width - 1)][random.randint(0, self.height - 1)]
+
+            prev_start = start
+
+            # Timeout function
+            if timeit.default_timer() - time_start > timeout:
+                break
+
+            if num_shapes >= 1000:
+                image_update_index = 100
+            elif num_shapes >= 10:
+                image_update_index = 10
+            else:
+                image_update_index = num_shapes
+
+            if i % int(num_shapes / image_update_index + 0.5) == 0:
+                print("\rLoading: {:.0f}%".format(i / num_shapes * 100), end='')
+
+            if i % int(0.5 * num_shapes + 0.5) == 0:
                 if self.filename != "":
                     img = Image.fromarray(self.export_array())
                     img.save(self.filename)

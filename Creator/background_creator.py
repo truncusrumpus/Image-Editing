@@ -1,23 +1,29 @@
 from Editor.Editor import Editor
 from Painter.Painter import Painter
 from Pixel.Pixel import Pixel
+from Utilities.colours import *
 
 class Tester:
     def __init__(self):
-        self.test()
+        self.design1("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 
-    def test(self):
-        filename = "C:/Users/hughr/Downloads/Images/Image Editing/test_input.png"
-        colours = [[73, 133, 230, 255], [31, 40, 135, 255], [15, 23, 102, 255], [32, 70, 140, 255],
-                   [10, 48, 120, 255], [54, 145, 224, 255], [54, 153, 224, 255]]
+    def design1(self, filename):
+        colour_list = blue_col_group + red_col_group
 
-        e = Editor(filename)
+        e = Editor()
+        e.create_rgba_array(1920, 1080, black)
         p = Painter(e.array, filename)
+        colour_list = p.randomize_list(colour_list)
 
-        p.artist5(5000, (1, 1), colours, 1200, [[255, 255, 255, 255], 1])
+        p.artist6(700, (1, 2), [black])
+        for col in colour_list:
+            # p.artist70(1000, 1, [col], 300)
+            p.artist71(1000, 1, [col], True, 300)
 
         e.load_array(p.export_array())
-        e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        e.save_image(filename)
+
+
 
 
 test = Tester()
