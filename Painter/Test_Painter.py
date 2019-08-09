@@ -188,6 +188,89 @@ class TestPainter(unittest.TestCase):
         assert p.array[20][20].colour == colour
         assert p.array[60][60].colour == colour
 
+    def test_convert_col(self):
+        red = [255, 0, 0, 255]
+        white = [255, 255, 255, 255]
+        black = [0, 0, 0, 255]
+        blue = [0, 0, 255, 255]
+
+        e = Editor()
+
+        # TEST 1
+        e.create_rgba_array(200, 200, black)
+        p = Painter(e.array)
+        p.rectangle(p[50][50], p[150][150], white)
+        p.convert_col([white], red, True, False, True)
+
+        # Checking colour change worked
+        self.assertTrue(p.list_equal(p[55][55].colour, red))
+        self.assertTrue(p.list_equal(p[55][145].colour, red))
+        self.assertTrue(p.list_equal(p[145][55].colour, red))
+        self.assertTrue(p.list_equal(p[145][145].colour, red))
+
+        # Checking invisible_override worked
+        self.assertTrue(p[55][55].line)
+        self.assertTrue(p[145][55].line)
+        self.assertTrue(p[55][145].line)
+        self.assertTrue(p[145][145].line)
+
+        # TEST 2
+        e.create_rgba_array(200, 200, black)
+        p = Painter(e.array)
+        p.rectangle(p[50][50], p[150][150], white)
+        p.convert_col([white], white, True, True, True)
+
+        # Checking colour change worked
+        self.assertTrue(p.list_equal(p[5][5].colour, white))
+        self.assertTrue(p.list_equal(p[55][55].colour, white))
+        self.assertTrue(p.list_equal(p[145][145].colour, white))
+        self.assertTrue(p.list_equal(p[195][195].colour, white))
+
+        # Checking invisible_override worked
+        self.assertTrue(p[5][5].line)
+        self.assertFalse(p[55][55].line)
+        self.assertFalse(p[145][55].line)
+        self.assertTrue(p[195][195].line)
+
+        # TEST 3
+        # Testing that convert_col to invis can work without changing pixel.colour
+        e.create_rgba_array(200, 200, black)
+        p = Painter(e.array)
+        p.rectangle(p[50][50], p[150][150], white)
+        p.convert_col([white], white, False, False, True)
+
+        # Checking colour change did not occur
+        self.assertTrue(p.list_equal(p[5][5].colour, black))
+        self.assertTrue(p.list_equal(p[55][55].colour, white))
+        self.assertTrue(p.list_equal(p[145][145].colour, white))
+        self.assertTrue(p.list_equal(p[195][195].colour, black))
+
+        # Checking invisible_override worked
+        self.assertFalse(p[5][5].line)
+        self.assertTrue(p[55][55].line)
+        self.assertTrue(p[145][55].line)
+        self.assertFalse(p[195][195].line)
+
+        # TEST 4
+        # Testing that convert_col to invis can work off of replacement_colour
+        # value without changing colour of pixel.colour
+        e.create_rgba_array(200, 200, black)
+        p = Painter(e.array)
+        p.rectangle(p[50][50], p[150][150], white)
+        p.convert_col([white], black, False, True, True)
+
+        # Checking colour change did not occur
+        self.assertTrue(p.list_equal(p[5][5].colour, black))
+        self.assertTrue(p.list_equal(p[55][55].colour, white))
+        self.assertTrue(p.list_equal(p[145][145].colour, white))
+        self.assertTrue(p.list_equal(p[195][195].colour, black))
+
+        # Checking invisible_override worked
+        self.assertFalse(p[5][5].line)
+        self.assertTrue(p[55][55].line)
+        self.assertTrue(p[145][55].line)
+        self.assertFalse(p[195][195].line)
+
 
 if __name__ == '__main__':
     unittest.main()

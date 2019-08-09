@@ -109,6 +109,12 @@ class VisualTesting:
         # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
         # p.interpolate(0.8)
 
+        # RECTANGLE
+        # e = Editor()
+        # e.create_rgba_array(500, 500)
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # p.rectangle(p[100][100], p[250][250], [255, 0, 0, 255])
+
         # ARTIST 7
         # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
         # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
@@ -118,17 +124,18 @@ class VisualTesting:
         # p.interpolate(0.6)
 
         # ARTIST 7
-        e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
-        p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
-        p.convert_col_to_invisible([255, 0, 0, 255], [255, 255, 255, 255], True)
+        # e = Editor("C:/Users/hughr/Downloads/Images/Image Editing/test_input.png")
+        # p = Painter(e.array, "C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
+        # p.convert_col_to_invisible([255, 0, 0, 255], [255, 255, 255, 255], True)
 
         # colours = []
         # for r in range(75, 255, 30):
         #     colours.append([r, 10, 10, 255])
 
-        p.artist7(100000, 1, colours, 600)
+        # p.artist7(100000, 1, colours, 600)
         # p.straight_line(p[10][10], p[1050][500], colour, 20, True)
-        p.interpolate(0.6)
+        # p.interpolate(0.6)
+
         e.load_array(p.export_array())
         e.save_image("C:/Users/hughr/Downloads/Images/Image Editing/test_output.png")
 

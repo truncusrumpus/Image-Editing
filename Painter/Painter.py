@@ -2,7 +2,6 @@ from PIL import Image
 import numpy as np
 import math
 import timeit
-import time
 import random
 from Package.Fill_Queue import FillQueue
 from Pixel.Pixel import Pixel
@@ -61,7 +60,7 @@ class Painter:
         inverse_colour[3] = colour[3]
         return inverse_colour
 
-    def interpolate_pixel(self, cell, ip_index):
+    def anti_alias_pixel(self, cell, ip_index):
         diff_pixels = 0
         adj_coloured_count = 0
         adj = cell.adjacent_squares(self.array)
@@ -102,10 +101,10 @@ class Painter:
         new_col.append(255)
         self[cell.x][cell.y].colour = new_col
 
-    def interpolate(self, interpolate_index):
+    def anti_alias(self, anti_alias_index):
         for w in range(self.width):
             for h in range(self.height):
-                self.interpolate_pixel(self[w][h], interpolate_index)
+                self.anti_alias_pixel(self[w][h], anti_alias_index)
                 if self.width >= 100:
                     if w % int(0.01 * self.width + 0.5) == 0:
                         print("\rLoading: {:.0f}%".format(w / self.width * 100), end='')
@@ -114,24 +113,19 @@ class Painter:
                     img = Image.fromarray(self.export_array())
                     img.save(self.filename)
 
-        print("\rInterpolate Complete.")
-
-    def convert_col_to_invisible(self, colour, replacement_colour=None, override=False):
-        for w in range(self.width):
-            for h in range(self.height):
-                if not override:    # override = False (default)
-                    if self.list_equal(self[w][h].colour, colour):
-                        if replacement_colour is not None:
-                            self[w][h].colour = replacement_colour
-                        self[w][h].line = True
-                else:   # override = True
-                    if replacement_colour is not None:
-                        # if self[w][h].colour != replacement_colour:
-                        if not self.list_almost_equal(self[w][h].colour, replacement_colour, 20):
-                            self[w][h].colour = replacement_colour
-                            self[w][h].line = True
+        print("\rAnti-Aliasing Complete.")
 
     def convert_col(self, colours, replacement_colour=None, replace_col=True, col_override=False, invis_override=False):
+        """
+        :param colours: colours of the pixels to be changed
+        :param replacement_colour: colour pixels will change to
+        :param replace_col: True if user wishes to change pixels' colour
+        :param col_override: True if user wishes to pixel.colour for all
+            pixels for which pixel.colour != replacement_colour
+        :param invis_override: True if user wishes to make pixel.line = True
+            for pixels whose colour is being changed
+        :return:
+        """
         for w in range(self.width):
             for h in range(self.height):
                 # Modifying pixel.colour:
@@ -150,10 +144,21 @@ class Painter:
                             self[w][h].colour = replacement_colour
                             if invis_override:
                                 self[w][h].line = True
+
                 # Not modifying pixel.colour:
                 else:
-                    if invis_override:
-                        self[w][h].line = True
+                    # Modifying pixel.colour depending on pixel.colour:
+                    if col_override is False:
+                        # If pixel.colour is not replacement_colour:
+                        if self.col_in_colours(self[w][h].colour, colours):
+                            if invis_override:
+                                self[w][h].line = True
+                    # pixel.colour will not affect result:
+                    else:
+                        # If pixel.colour is not replacement_colour:
+                        if not self.list_equal(self[w][h].colour, replacement_colour):
+                            if invis_override:
+                                self[w][h].line = True
 
     def col_in_colours(self, colour, list_of_col):
         for col in list_of_col:
@@ -451,6 +456,14 @@ class Painter:
                                 self[x][y].colour = colour
 
         return centre
+
+    def rectangle(self, top_left, bottom_right, colour):
+        assert 0 <= top_left.x < self.width and 0 <= top_left.y < self.height
+        assert 0 <= bottom_right.x < self.width and 0 <= bottom_right.y < self.height
+
+        for x in range(top_left.x, bottom_right.x):
+            for y in range(top_left.y, bottom_right.y):
+                self[x][y].colour = colour
 
     def paint_drop_line(self, start, end, colour=[0, 0, 0, 255], stroke=(1, 1)):
         assert type(start.x) is int and type(start.y) is int, "Coord's are not int's"
